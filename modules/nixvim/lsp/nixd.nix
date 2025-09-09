@@ -12,7 +12,8 @@
       let
         # Yoinked from https://github.com/MattSturgeon/nix-config/commit/b8aa42d6c01465949ef5cd9d4dc086d4eaa36793
         # The wrapper curries `_nixd-expr.nix` with the `self` and `system` args
-        wrapper = builtins.toFile "expr.nix" ''
+        # wrapper = builtins.toFile "expr.nix" ''
+        wrapper = pkgs.writeText "expr.nix" ''
           import ${./_nixd-expr.nix} {
             self = ${builtins.toJSON self};
             system = ${builtins.toJSON pkgs.stdenv.hostPlatform.system};
