@@ -9,7 +9,7 @@ code in this repository.
 - `nix flake check` - Check Nix flake with `nix flake check`
 - `nix develop` - Enter development shell
 - `nix run` - Activate the configuration
-- `nix build` - Build the configuration
+- `nix build` - Build the configurationttt
 - `new-plugin <plugin-name> <template-type>` - Generate new plugin templates
   (available in dev shell, template-type: custom, custom-lazy, nixvim)
 
