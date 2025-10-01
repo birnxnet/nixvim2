@@ -41,11 +41,16 @@
           gofmt.enable = true;
           isort.enable = true;
           keep-sorted.enable = true;
+          nixf-diagnose = {
+            enable = true;
+            priority = -1;
+          };
           nixfmt = {
             enable = true;
             package = pkgs.nixfmt;
           };
-          # FIXME: removed???
+          # TODO: removed package because it wasn't safe enough
+          # Should re-visit sometime
           # nufmt.enable = true;
           ruff-check.enable = true;
           ruff-format.enable = true;
@@ -54,7 +59,10 @@
             enable = true;
             indent_size = 4;
           };
-          statix.enable = true;
+          statix = {
+            enable = true;
+            priority = -2;
+          };
           stylua.enable = true;
           taplo.enable = true;
           yamlfmt.enable = true;
@@ -80,6 +88,10 @@
           ];
 
           formatter.ruff-format.options = [ "--isolated" ];
+          formatter.nixf-diagnose.options = [
+            "--auto-fix"
+            "--ignore=sema-unused-def-lambda-witharg-formal"
+          ];
         };
       };
     };

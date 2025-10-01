@@ -41,8 +41,19 @@
       angularls.enable = true;
       bashls.enable = true;
       biome.enable = true;
-      # FIXME: broken upstream
-      # cmake.enable = true;
+      cmake.enable = true;
+      copilot = {
+        enable = true;
+
+        settings.settings = {
+          "copilot" = {
+            cmd = [
+              "${lib.getExe pkgs.copilot-language-server}"
+              "--stdio"
+            ];
+          };
+        };
+      };
       cssls.enable = true;
       dockerls.enable = true;
       # FIXME: [lspconfig] Unable to find ESLint library.
@@ -58,16 +69,13 @@
         # TODO: package FSharpLanguageServer
         # cmd = [ "${pkgs.fsharp-language-server}/FSharpLanguageServer.dll" ];
       };
-      # FIXME: broken upstream
-      # gdscript = {
-      #   enable = true;
-      #   package = pkgs.gdtoolkit_4;
-      # };
-
+      gdscript = {
+        enable = true;
+        package = pkgs.gdtoolkit_4;
+      };
       gopls.enable = true;
       html.enable = true;
-      java_language_server.enable = !config.plugins.jdtls.enable;
-      jdtls.enable = !config.plugins.jdtls.enable;
+      java_language_server.enable = config.khanelivim.lsp.java == "java-language-server";
       jsonls.enable = true;
       kulala_ls.enable = true;
       marksman.enable = true;
@@ -80,7 +88,7 @@
       stylelint_lsp.enable = true;
       tailwindcss.enable = true;
       taplo.enable = true;
-      ts_ls.enable = !config.plugins.typescript-tools.enable;
+      ts_ls.enable = config.khanelivim.lsp.typescript == "ts_ls";
       yamlls.enable = true;
     };
   };

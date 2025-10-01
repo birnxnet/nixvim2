@@ -1,11 +1,21 @@
-{ lib, pkgs, ... }:
 {
-  # Needed for RustPlay
-  extraPlugins = with pkgs.vimPlugins; [ webapi-vim ];
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  extraPlugins = lib.mkIf config.plugins.rustaceanvim.enable (
+    with pkgs.vimPlugins;
+    [
+      # Needed for RustPlay
+      webapi-vim
+    ]
+  );
 
   plugins = {
     rustaceanvim = {
-      enable = true;
+      enable = config.khanelivim.lsp.rust == "rustaceanvim";
       settings = {
         dap = {
           adapter = {
