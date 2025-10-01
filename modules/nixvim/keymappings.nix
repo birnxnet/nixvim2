@@ -50,13 +50,13 @@
               };
 
               # navigate to left/right window
-              "<leader>[" = {
+              "<C-h>" = {
                 action = "<C-w>h";
                 options = {
                   desc = "Left window";
                 };
               };
-              "<leader>]" = {
+              "<C-l>" = {
                 action = "<C-w>l";
                 options = {
                   desc = "Right window";
@@ -134,7 +134,7 @@
                 };
               };
               "<C-n>" = {
-                action = "<Cmd>enew<CR>";
+                action = "<Cmd>new<CR>";
                 options = {
                   desc = "New file";
                 };
@@ -171,7 +171,7 @@
                 };
               };
               "<TAB>" = {
-                action = "<cmd>bnext<CR>";
+                action = "<cmd>BufferLineCycleNext<CR>";
                 options = {
                   desc = "Next buffer (default)";
                 };
@@ -183,7 +183,7 @@
                 };
               };
               "<S-TAB>" = {
-                action = "<cmd>bprevious<CR>";
+                action = "<cmd>BufferLineCyclePrev<CR>";
                 options = {
                   desc = "Previous buffer";
                 };
