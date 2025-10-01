@@ -311,17 +311,17 @@
                     only_latest_version = false;
                   };
                 };
-                easy-dotnet = lib.mkIf config.plugins.easy-dotnet.enable {
-                  module = "easy-dotnet.completion.blink";
-                  name = "easy-dotnet";
-                  async = true;
-                  score_offset = 1000;
-                  enabled.__raw = ''
-                    function()
-                      return vim.bo.filetype == "xml"
-                    end
-                  '';
-                };
+                # easy-dotnet = lib.mkIf config.plugins.easy-dotnet.enable {
+                #   module = "easy-dotnet.completion.blink";
+                #   name = "easy-dotnet";
+                #   async = true;
+                #   score_offset = 1000;
+                #   enabled.__raw = ''
+                #     function()
+                #       return vim.bo.filetype == "xml"
+                #     end
+                #   '';
+                # };
                 avante = lib.mkIf config.plugins.avante.enable {
                   module = "blink-cmp-avante";
                   name = "Avante";

@@ -91,17 +91,6 @@
       adapters = lib.mkIf (config.plugins.treesitter.enable && config.plugins.neotest.enable) {
         bash.enable = true;
         deno.enable = true;
-        dotnet = {
-          enable = false;
-
-          settings = {
-            dap = {
-              args = {
-                justMyCode = false;
-              };
-            };
-          };
-        };
         go.enable = true;
         java.enable = true;
         # NOTE: just run NeotestJava setup
