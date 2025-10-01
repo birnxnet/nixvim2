@@ -2,7 +2,7 @@
 {
   plugins = {
     easy-dotnet = {
-      enable = true;
+      enable = false;
 
       lazyLoad.settings.ft = [
         "cs"
