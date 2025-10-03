@@ -15,7 +15,7 @@
     ./indentscope.nix
     ./map.nix
     ./pairs.nix
-    # ./starter.nix
+    ./starter.nix
     ./surround.nix
   ];
 
