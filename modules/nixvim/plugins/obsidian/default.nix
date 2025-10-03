@@ -7,8 +7,8 @@
     settings = {
       workspaces = [
         {
-          name = "jot";
-          path = "~/dumper/jot";
+          name = "jot2";
+          path = "~/dumper/jot2";
         }
       ];
 
