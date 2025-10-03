@@ -170,7 +170,7 @@
                   desc = "Next buffer";
                 };
               };
-              "<TAB>" = {
+              "<S-l>" = {
                 action = "<cmd>BufferLineCycleNext<CR>";
                 options = {
                   desc = "Next buffer (default)";
@@ -182,7 +182,7 @@
                   desc = "Previous buffer";
                 };
               };
-              "<S-TAB>" = {
+              "<S-h>" = {
                 action = "<cmd>BufferLineCyclePrev<CR>";
                 options = {
                   desc = "Previous buffer";
