@@ -27,7 +27,7 @@
         # };
         # templates.subdir = "templates";
 
-        # picker.name = "snacks.pick";
+        picker.name = "snacks.pick";
         completion.blink = true;
 
         legacy_commands = false;
