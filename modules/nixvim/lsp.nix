@@ -21,6 +21,7 @@
   ];
 
   lsp = {
+    enable = true;
     inlayHints.enable = true;
 
     servers = {
@@ -61,6 +62,10 @@
       emmylua_ls = {
         enable = true;
         package = pkgs.emmylua-ls;
+      };
+      lua_ls = {
+        enable = true;
+        # package = pkgs.emmylua-ls;
       };
       fish_lsp.enable = true;
       fsautocomplete.enable = true;

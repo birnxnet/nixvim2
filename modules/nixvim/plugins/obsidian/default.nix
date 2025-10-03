@@ -22,11 +22,11 @@
       # };
       # templates.subdir = "templates";
 
-      picker.name = "snacks.pick";
+      # picker.name = "snacks.pick";
       completion.blink = true;
 
       legacy_commands = false;
-      notes_subdir = "notes";
+      notes_subdir = "jot";
       new_notes_location = "notes_subdir";
       note_id_func.__raw = ''
         function(title)
