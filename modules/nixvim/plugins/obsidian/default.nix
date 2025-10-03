@@ -5,10 +5,11 @@
     enable = true;
 
     settings = {
+      new_notes_location = "current_dir";
       workspaces = [
         {
           name = "jot2";
-          path = "~/dumper/jot2";
+          path = "/home/birnx/dumper/jot2";
         }
       ];
 
@@ -26,8 +27,7 @@
       completion.blink = true;
 
       legacy_commands = false;
-      notes_subdir = "jot";
-      new_notes_location = "notes_subdir";
+      # notes_subdir = "jot";
       note_id_func.__raw = ''
         function(title)
             -- Create note IDs in a Zettelkasten format with a timestamp and a suffix.
