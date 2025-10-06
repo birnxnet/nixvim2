@@ -58,13 +58,12 @@
       dockerls.enable = true;
       # FIXME: [lspconfig] Unable to find ESLint library.
       # eslint.enable = true;
-      emmylua_ls = {
+      emmylua-ls = {
         enable = true;
         package = pkgs.emmylua-ls;
       };
-      lua_ls = {
+      lua-ls = {
         enable = true;
-        # package = pkgs.emmylua-ls;
       };
       fish_lsp.enable = true;
       fsautocomplete.enable = true;
@@ -79,7 +78,7 @@
       };
       gopls.enable = true;
       html.enable = true;
-      java_language_server.enable = config.khanelivim.lsp.java == "java-language-server";
+      # java_language_server.enable = config.khanelivim.lsp.java == "java-language-server";
       jsonls.enable = true;
       kulala_ls.enable = true;
       marksman.enable = true;
