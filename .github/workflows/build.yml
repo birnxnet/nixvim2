@@ -3,7 +3,7 @@ permissions:
   contents: read
 on:
   push:
-    branches: [main]
+    branches: [doi]
   pull_request:
   workflow_dispatch:
 jobs:
@@ -27,14 +27,14 @@ jobs:
           extra_nix_config: |
             auto-optimise-store = true
             allow-import-from-derivation = false
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            access-tokens = github.com=${{ secrets.GH_TOK_2 }}
             experimental-features = nix-command flakes
             system = ${{ matrix.system }}
       - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
-          name: khanelivim
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          name: birnx
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN_3 }}"
       - name: Build
         run: |
           nix build --accept-flake-config
