@@ -55,7 +55,19 @@
                   desc = "Left window";
                 };
               };
+              "<C-h>" = {
+                action = "<C-w>h";
+                options = {
+                  desc = "Left window";
+                };
+              };
               "<leader>]" = {
+                action = "<C-w>l";
+                options = {
+                  desc = "Right window";
+                };
+              };
+              "<C-l>" = {
                 action = "<C-w>l";
                 options = {
                   desc = "Right window";
@@ -172,10 +184,16 @@
                 };
               };
 
-              "<leader>b]" = {
+              "<S-l>" = {
                 action = "<cmd>bnext<CR>";
                 options = {
                   desc = "Next buffer";
+                };
+              };
+              "<S-h>" = {
+                action = "<cmd>bprevious<CR>";
+                options = {
+                  desc = "Previous buffer";
                 };
               };
               "<TAB>" = {
@@ -184,12 +202,12 @@
                   desc = "Next buffer (default)";
                 };
               };
-              "<leader>b[" = {
-                action = "<cmd>bprevious<CR>";
-                options = {
-                  desc = "Previous buffer";
-                };
-              };
+              # "<leader>b[" = {
+              #   action = "<cmd>bprevious<CR>";
+              #   options = {
+              #     desc = "Previous buffer";
+              #   };
+              # };
               "<S-TAB>" = {
                 action = "<cmd>bprevious<CR>";
                 options = {
