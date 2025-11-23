@@ -92,7 +92,7 @@
         bash.enable = true;
         deno.enable = true;
         dotnet = {
-          enable = true;
+          enable = false;
 
           settings = {
             dap = {
