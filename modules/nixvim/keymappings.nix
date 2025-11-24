@@ -189,13 +189,13 @@ in
               };
 
               "<S-l>" = {
-                action = "<cmd>bnext<CR>";
+                action = "<cmd>BufferLineCycleNext<CR>";
                 options = {
                   desc = "Next buffer";
                 };
               };
               "<S-h>" = {
-                action = "<cmd>bprevious<CR>";
+                action = "<cmd>BufferLineCyclePrev<CR>";
                 options = {
                   desc = "Previous buffer";
                 };
