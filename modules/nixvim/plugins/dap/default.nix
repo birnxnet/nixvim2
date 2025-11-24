@@ -8,7 +8,7 @@
   imports = [
     # FIXME: bashdb broken
     # ./bash.nix
-    ./dotnet.nix
+    # ./dotnet.nix
     ./javascript.nix
     ./lua.nix
   ];

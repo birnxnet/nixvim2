@@ -12,7 +12,7 @@
 
   plugins = {
     neotest = {
-      enable = true;
+      enable = false;
       lazyLoad = {
         settings = {
           keys = [
