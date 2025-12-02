@@ -3,6 +3,12 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with
 code in this repository.
 
+## Overview
+
+Khanelivim is a fully customized Neovim configuration built with Nix and
+[Nixvim](https://github.com/nix-community/nixvim). It provides a reproducible,
+declarative Neovim setup with 100+ plugins organized in a modular architecture.
+
 ## Commands
 
 - `nix flake update` - Update Nix flake
@@ -10,8 +16,258 @@ code in this repository.
 - `nix develop` - Enter development shell
 - `nix run` - Activate the configuration
 - `nix build` - Build the configuration
+- `nix fmt` - Format all Nix files
 - `new-plugin <plugin-name> <template-type>` - Generate new plugin templates
   (available in dev shell, template-type: custom, custom-lazy, nixvim)
+
+### Just Commands
+
+The project uses `just` as a task runner:
+
+- `just` - List available commands
+- `just update` - Update nix flake
+- `just lint` - Lint nix files with `nix fmt`
+- `just check` - Check nix flake
+- `just dev` - Enter dev shell
+- `just run` - Activate the configuration
+
+## Codebase Architecture
+
+```
+khanelivim/
+├── flake.nix                 # Main flake entry point
+├── flake.lock                # Locked dependencies
+├── flake/                    # Flake configuration modules
+│   ├── default.nix           # Flake module organization
+│   ├── nixvim.nix            # Nixvim configuration builder (profiles)
+│   ├── overlays.nix          # Overlay loader
+│   ├── pkgs-by-name.nix      # Custom package integration
+│   ├── apps/                 # Utility apps (profile, update, etc.)
+│   │   ├── profile.nix       # Performance profiling tool
+│   │   ├── update.nix        # Flake update utility
+│   │   ├── grammar-sizes.nix # Treesitter grammar analysis
+│   │   └── pack-dir.nix      # Pack directory utilities
+│   └── dev/                  # Development partition
+│       ├── devshell.nix      # Development shell config
+│       ├── git-hooks.nix     # Pre-commit hooks
+│       ├── treefmt.nix       # Formatter configuration
+│       └── new-plugin.py     # Plugin template generator
+├── modules/
+│   ├── khanelivim/           # High-level options system
+│   │   ├── default.nix       # Options module entry point
+│   │   └── options/          # Option definitions (16 files)
+│   │       ├── ai.nix        # AI provider options
+│   │       ├── completion.nix
+│   │       ├── dashboard.nix
+│   │       ├── debugging.nix
+│   │       ├── documentation.nix
+│   │       ├── editor.nix
+│   │       ├── git.nix
+│   │       ├── loading.nix
+│   │       ├── lsp.nix
+│   │       ├── performance.nix
+│   │       ├── picker.nix
+│   │       ├── profiles.nix  # minimal/basic/standard/full presets
+│   │       ├── tasks.nix
+│   │       ├── text.nix
+│   │       ├── ui.nix
+│   │       └── utilities.nix
+│   └── nixvim/               # Nixvim configuration
+│       ├── default.nix       # Auto-imports all plugins
+│       ├── options.nix       # Vim options
+│       ├── keymappings.nix   # Global keymaps
+│       ├── autocommands.nix  # Autocommands
+│       ├── lsp.nix           # LSP configuration
+│       ├── diagnostics.nix   # Diagnostic settings
+│       ├── performance.nix   # Performance optimizations
+│       ├── dependencies.nix  # Plugin dependencies
+│       ├── lua.nix           # Lua configuration
+│       ├── ft.nix            # Filetype configuration
+│       ├── usercommands.nix  # User commands
+│       ├── lsp/              # LSP server configs (10 files)
+│       └── plugins/          # Plugin configurations (119 directories)
+├── overlays/                 # Nix package overlays
+│   ├── input-packages.nix    # Package overrides from nixpkgs-master
+│   └── neovim-nightly.nix    # Neovim nightly overlay
+├── packages/                 # Custom package definitions
+│   ├── git-conflict/
+│   ├── neotest-catch2/
+│   ├── neovim-tasks/
+│   ├── tree-sitter-kulala-http/
+│   └── tree-sitter-norg-meta/
+└── shells/                   # Development shell configuration
+    └── default.nix
+```
+
+## Options System (khanelivim)
+
+The `khanelivim` options module provides a high-level declarative interface for
+configuring the entire Neovim setup. Options map to plugin configurations.
+
+### Key Options Namespaces
+
+| Namespace                  | Purpose                                       |
+| -------------------------- | --------------------------------------------- |
+| `khanelivim.ai`            | AI provider (copilot, avante, codecompanion)  |
+| `khanelivim.completion`    | Completion engine (blink, cmp)                |
+| `khanelivim.dashboard`     | Dashboard tool (snacks, mini-starter)         |
+| `khanelivim.debugging`     | DAP adapters and UI                           |
+| `khanelivim.editor`        | File manager, search, motion, HTTP client     |
+| `khanelivim.git`           | Git integrations and diff viewer              |
+| `khanelivim.lsp`           | LSP server selection                          |
+| `khanelivim.picker`        | Picker tool (telescope, fzf-lua, snacks)      |
+| `khanelivim.text`          | Comments, markdown, operators, patterns       |
+| `khanelivim.ui`            | Statusline, bufferline, notifications, etc.   |
+| `khanelivim.utilities`     | Session, clipboard, screenshots               |
+| `khanelivim.profile`       | Profile preset (minimal/basic/standard/full)  |
+
+### Configuration Profiles
+
+Defined in `modules/khanelivim/options/profiles.nix`:
+
+- **minimal**: Just treesitter, LSP, completion - no UI enhancements
+- **basic**: Core editing + statusline + gitsigns + snacks picker
+- **standard**: Full features, deduplicated (one AI tool, one file manager)
+- **full**: All features enabled including duplicates (default)
+
+## Plugin Configuration Patterns
+
+Plugins are in `modules/nixvim/plugins/`. The `default.nix` auto-imports all
+plugin directories.
+
+### Pattern 1: Simple Plugin
+
+```nix
+# plugins/copilot-lsp/default.nix
+{
+  plugins.copilot-lsp = {
+    enable = true;
+    lazyLoad.settings.event = [ "InsertEnter" ];
+    settings = { /* plugin config */ };
+  };
+}
+```
+
+### Pattern 2: Plugin with Conditional Enable
+
+```nix
+# plugins/gitsigns/default.nix
+{ config, lib, ... }:
+{
+  plugins.gitsigns = {
+    enable = lib.elem "gitsigns" config.khanelivim.git.integrations;
+    lazyLoad.settings.event = "DeferredUIEnter";
+    settings = { /* config */ };
+  };
+}
+```
+
+### Pattern 3: Plugin with Keymaps and Which-Key
+
+```nix
+{ config, lib, ... }:
+{
+  plugins.myplugin = {
+    enable = true;
+    settings = { /* config */ };
+  };
+
+  # Which-key group registration
+  plugins.which-key.settings.spec = lib.optionals config.plugins.myplugin.enable [
+    {
+      __unkeyed-1 = "<leader>x";
+      group = "My Plugin";
+      icon = " ";
+    }
+  ];
+
+  # Conditional keymaps
+  keymaps = lib.mkIf config.plugins.myplugin.enable [
+    {
+      mode = "n";
+      key = "<leader>xa";
+      action = "<cmd>MyPluginAction<CR>";
+      options.desc = "My Action";
+    }
+  ];
+}
+```
+
+### Pattern 4: Modular Plugin with Sub-files
+
+```nix
+# plugins/snacks/default.nix
+{ config, lib, ... }:
+{
+  imports = [
+    ./bigfile.nix
+    ./dashboard.nix
+    ./notifier.nix
+    ./picker.nix
+    # ... more modules
+  ];
+
+  plugins.snacks = {
+    enable = true;
+    settings = {
+      indent.enabled = config.khanelivim.ui.indentGuides == "snacks";
+      # ...
+    };
+  };
+}
+```
+
+### Pattern 5: Lua Code Blocks
+
+Use `__raw` for inline Lua:
+
+```nix
+{
+  action.__raw = ''
+    function()
+      require('gitsigns').stage_hunk()
+      vim.notify('Hunk staged', vim.log.levels.INFO)
+    end
+  '';
+}
+```
+
+### Lazy Loading Events
+
+Common lazy loading triggers:
+
+- `"InsertEnter"` - When entering insert mode
+- `"DeferredUIEnter"` - After UI loads (lz.n custom event)
+- `"BufReadPost"` / `"BufNewFile"` - When opening files
+- `"VeryLazy"` - Deferred after startup
+- `cmd = [ "PluginCommand" ]` - On command invocation
+- `keys = [ "<leader>key" ]` - On keymap trigger
+
+## LSP Configuration
+
+LSP servers are configured in `modules/nixvim/lsp/` and main `lsp.nix`.
+
+### Adding a New LSP Server
+
+1. Create `modules/nixvim/lsp/myserver.nix`:
+
+```nix
+{ config, lib, ... }:
+{
+  plugins.lsp.servers.myserver = {
+    enable = lib.elem "myserver" config.khanelivim.lsp.servers;
+    settings = { /* server settings */ };
+  };
+}
+```
+
+2. Add to `khanelivim.lsp.servers` option in `modules/khanelivim/options/lsp.nix`
+
+### Existing LSP Servers
+
+bashls, ccls, clangd, cssls, dockerls, gopls, html, jdtls, jsonls, lua-ls,
+marksman, harper-ls, nil-ls, nixd, pyright, rust-analyzer, sqls, taplo,
+typescript-tools, yamlls, helm-ls, typos-lsp, roslyn, rzls
 
 ## Code Style Guidelines
 
@@ -26,10 +282,25 @@ code in this repository.
 
 ## Development Workflow
 
-- Make changes in appropriate module files
-- Run `deadnix -e` and `statix fix .` before committing
-- Verify changes with `nix flake check`
-- Test by running `nix run` to activate the configuration
+1. **Enter dev shell**: `nix develop`
+2. **Make changes** in appropriate module files
+3. **Lint and fix**:
+   - `deadnix -e` - Remove unused code
+   - `statix fix .` - Fix linting issues
+   - `nix fmt` - Format Nix files
+4. **Verify**: `nix flake check`
+5. **Test**: `nix run` to activate the configuration
+
+### Adding a New Plugin
+
+1. Enter dev shell: `nix develop`
+2. Generate template: `new-plugin <name> <template-type>`
+   - `nixvim` - Standard plugins with native Nixvim options
+   - `custom` - Plugins requiring custom Lua configuration
+   - `custom-lazy` - Plugins with lazy loading and custom config
+3. Configure in `modules/nixvim/plugins/<name>/default.nix`
+4. Add khanelivim option if needed in `modules/khanelivim/options/`
+5. Test with `nix run`
 
 ## Git Commit Conventions
 
@@ -224,6 +495,41 @@ PROF=1 PROF_OUTPUT=/tmp/profile.json PROF_AUTO_QUIT=1 nvim
 | `PROF_FORMAT`    | Export format: `md`, `json`, `both`  |
 | `PROF_AUTO_QUIT` | Exit after export (for automation)   |
 
+## Overlays
+
+Overlays in `overlays/` modify or add packages:
+
+- **input-packages.nix**: Overrides packages from nixpkgs-master (claude-code,
+  github-copilot-cli, opencode), disables checks for fzf-lua, grug-far-nvim,
+  neotest, and overrides snacks-nvim with custom source
+- **neovim-nightly.nix**: Neovim nightly overlay
+
+Overlays are auto-loaded via `flake/overlays.nix`.
+
+## Custom Packages
+
+Packages in `packages/` are custom derivations:
+
+- **git-conflict** - Git conflict resolution plugin
+- **neotest-catch2** - Neotest adapter for Catch2 testing
+- **neovim-tasks** - Neovim task integration
+- **tree-sitter-kulala-http** - Tree-sitter grammar for Kulala HTTP
+- **tree-sitter-norg-meta** - Tree-sitter grammar for Norg meta
+
+Add new packages by creating `packages/<name>/package.nix`.
+
+## GitHub Workflows
+
+Located in `.github/workflows/`:
+
+- **build.yml** - Build configuration packages
+- **check.yml** - Nix flake check validation
+- **deadnix.yml** - Check for unused Nix code
+- **fmt.yml** - Formatting validation
+- **label.yml** - PR labeling automation
+- **lint.yml** - Linting checks
+- **update-flakes.yml** - Automated flake updates
+
 ## Crash Debugging & Troubleshooting
 
 When Neovim crashes (segfaults, freezes, or unexpected behavior), follow this
@@ -401,3 +707,39 @@ debug.enabled = false;
 
 This helps future you (and others) understand why seemingly useful features are
 disabled.
+
+## Key Plugins by Category
+
+### AI & Code Intelligence
+
+avante, blink, copilot, copilot-lsp, claude-code, claudecode, codecompanion
+
+### Navigation & Search
+
+telescope (+ extensions), fzf-lua, snacks picker, flash, hop, harpoon
+
+### File Management
+
+yazi, neo-tree, fff
+
+### Git Integration
+
+gitsigns, diffview, git-conflict, git-worktree, gitignore
+
+### LSP & Completion
+
+lspconfig, blink, navic, glance, lightbulb, trouble
+
+### Debugging & Testing
+
+dap, dap-ui, dap-virtual-text, neotest
+
+### UI/UX
+
+catppuccin, bufferline, lualine, which-key, noice, snacks, indent-blankline
+
+### Treesitter
+
+treesitter, treesitter-context, treesitter-refactor
+
+See `modules/nixvim/plugins/` for complete list (119 plugin directories).
