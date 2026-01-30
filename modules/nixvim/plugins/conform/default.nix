@@ -95,7 +95,7 @@
           css = [ "stylelint" ];
           fish = [ "fish_indent" ];
           fsharp = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ "fantomas" ];
-          gdscript = [ "gdformat" ];
+          # gdscript = [ "gdformat" ];
           go = [ "golines" ];
           java = [ "google-java-format" ];
           javascript = {

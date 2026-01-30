@@ -72,7 +72,7 @@
         # cmd = [ "${pkgs.fsharp-language-server}/FSharpLanguageServer.dll" ];
       };
       gdscript = {
-        enable = true;
+        enable = false;
         package = pkgs.gdtoolkit_4;
       };
       gopls.enable = true;
