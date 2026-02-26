@@ -8,7 +8,7 @@
   # TODO: Consider upstreaming this module to nixvim
   options.plugins.claude-fzf-history = {
     enable = lib.mkEnableOption "claude-fzf-history" // {
-      default = true;
+      default = config.plugins.claudecode.enable;
     };
 
     package = lib.mkPackageOption pkgs.vimPlugins "claude-fzf-history" {
@@ -30,7 +30,11 @@
 
         logging.level = "WARN";
       };
-      description = "Configuration for claude-fzf-history";
+      description = ''
+        Configuration for claude-fzf-history.
+
+        See <https://github.com/pittcat/claude-fzf-history.nvim>
+      '';
     };
   };
 

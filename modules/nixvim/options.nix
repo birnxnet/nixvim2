@@ -132,8 +132,11 @@ in
     pumheight = 10; # Max popup menu items
     infercase = true;
     completeopt = [
+      "menu"
       "menuone"
       "noselect"
+    ]
+    ++ lib.optionals (config.khanelivim.completion.tool != "blink") [
       "popup"
     ]; # Native completion options
 
@@ -149,7 +152,6 @@ in
   }
   // lib.optionalAttrs hasNeovim012OrNewer {
     # Use 0.12+/nightly popup capabilities when available.
-    # completefuzzycollect = "keyword,files,whole_line";
     completeitemalign = "abbr,kind,menu";
     # completepopup = "height:12,width:60,border:single";
     jumpoptions = "stack";

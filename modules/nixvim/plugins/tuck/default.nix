@@ -22,7 +22,8 @@ in
   # TODO: Consider upstreaming this module to nixvim
   options.plugins.tuck = {
     enable = lib.mkEnableOption "tuck" // {
-      default = true;
+      # FIXME: bug collapses all folds randomly
+      # default = true;
     };
 
     package = lib.mkOption {
@@ -35,7 +36,11 @@ in
     settings = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       default = { };
-      description = "Configuration passed to `require('tuck').setup(...)`.";
+      description = ''
+        Configuration passed to `require('tuck').setup(...)`.
+
+        See <https://github.com/khaneliman/tuck.nvim>
+      '';
     };
   };
 
@@ -45,7 +50,10 @@ in
     '';
 
     # Auto-enable fzf-lua integration when fzf-lua is enabled, unless overridden.
-    plugins.tuck.settings.integrations.fzf_lua = lib.mkDefault config.plugins.fzf-lua.enable;
+    plugins.tuck.settings = {
+      auto_unfold = false;
+      integrations.fzf_lua = config.plugins.fzf-lua.enable;
+    };
 
     extraFiles = lib.mkIf config.plugins.treesitter.enable queryExtraFiles;
 

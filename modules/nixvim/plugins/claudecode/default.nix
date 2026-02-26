@@ -30,7 +30,11 @@
           open_in_current_tab = true;
         };
       };
-      description = "Configuration for claudecode";
+      description = ''
+        Configuration for claudecode.
+
+        See <https://github.com/coder/claudecode.nvim>
+      '';
     };
   };
 
@@ -86,7 +90,7 @@
         ];
       };
 
-      keymaps = [
+      keymaps = lib.mkIf config.plugins.claudecode.enable [
         {
           mode = "n";
           key = "<leader>act";

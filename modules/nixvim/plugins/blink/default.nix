@@ -11,6 +11,8 @@
   ];
 
   plugins.blink-cmp = {
+    # blink-cmp documentation
+    # See: https://cmp.saghen.dev/
     enable = config.khanelivim.completion.tool == "blink";
 
     lazyLoad.settings.event = [
@@ -251,7 +253,7 @@
       };
 
       signature = {
-        enabled = true;
+        enabled = config.khanelivim.ui.signatureHelp == "blink";
         window.border = "rounded";
       };
 

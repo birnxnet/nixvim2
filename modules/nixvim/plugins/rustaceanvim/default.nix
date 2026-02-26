@@ -17,6 +17,8 @@
 
   plugins = {
     rustaceanvim = {
+      # rustaceanvim documentation
+      # See: https://github.com/mrcjkb/rustaceanvim
       enable = config.khanelivim.lsp.rust == "rustaceanvim";
       lazyLoad.settings = {
         ft = "rust";
@@ -106,7 +108,7 @@
     }
     {
       mode = "n";
-      key = "<leader>dR";
+      key = "<leader>RD";
       action = "<cmd>RustLsp debuggables<CR>";
       options.desc = "Rust Debuggables";
     }

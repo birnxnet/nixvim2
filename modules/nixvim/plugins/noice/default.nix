@@ -2,6 +2,8 @@
 {
   plugins = {
     noice = {
+      # noice.nvim documentation
+      # See: https://github.com/folke/noice.nvim
       enable =
         config.khanelivim.ui.commandline == "noice" || config.khanelivim.ui.notifications == "noice";
 
@@ -81,7 +83,7 @@
           };
 
           progress.enabled = true;
-          signature.enabled = !config.plugins.lsp-signature.enable;
+          signature.enabled = config.khanelivim.ui.signatureHelp == "noice";
         };
 
         popupmenu.backend = "nui";

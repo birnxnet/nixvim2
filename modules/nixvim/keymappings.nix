@@ -91,10 +91,10 @@ in
               };
 
               # navigate quickfix list
-              "<C-[>" = {
+              "]q" = {
                 action = "<cmd>cnext<CR>";
               };
-              "<C-]>" = {
+              "[q" = {
                 action = "<cmd>cprev<CR>";
               };
 

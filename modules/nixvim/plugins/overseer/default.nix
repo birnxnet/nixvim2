@@ -2,6 +2,8 @@
 {
   plugins = {
     overseer = {
+      # overseer.nvim documentation
+      # See: https://github.com/stevearc/overseer.nvim
       enable = config.khanelivim.tasks.tool == "overseer";
 
       lazyLoad.settings.cmd = [
@@ -58,6 +60,34 @@
       action = "<cmd>OverseerTaskAction<CR>";
       options = {
         desc = "Task Action";
+      };
+    }
+    {
+      mode = "n";
+      key = "<leader>Rl";
+      action.__raw = ''
+        function()
+          local overseer = require("overseer")
+          local task_list = require("overseer.task_list")
+          local tasks = overseer.list_tasks({
+            status = {
+              overseer.STATUS.SUCCESS,
+              overseer.STATUS.FAILURE,
+              overseer.STATUS.CANCELED,
+            },
+            sort = task_list.sort_finished_recently,
+          })
+
+          if vim.tbl_isempty(tasks) then
+            vim.notify("No recent task found", vim.log.levels.WARN)
+            return
+          end
+
+          overseer.run_action(tasks[1], "restart")
+        end
+      '';
+      options = {
+        desc = "Restart Last Task";
       };
     }
   ];

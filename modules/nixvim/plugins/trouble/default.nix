@@ -2,6 +2,8 @@
 {
   plugins = {
     trouble = {
+      # trouble.nvim documentation
+      # See: https://github.com/folke/trouble.nvim
       enable = true;
 
       lazyLoad.settings.cmd = [ "Trouble" ];
@@ -74,7 +76,7 @@
     }
     {
       mode = "n";
-      key = "<leader>us";
+      key = "<leader>xs";
       action = "<cmd>Trouble symbols toggle focus=false<cr>";
       options = {
         desc = "Symbols toggle";

@@ -21,6 +21,8 @@ let
 in
 {
   plugins.lualine = {
+    # lualine.nvim documentation
+    # See: https://github.com/nvim-lualine/lualine.nvim
     enable = config.khanelivim.ui.statusline == "lualine";
 
     lazyLoad.settings = {
@@ -41,7 +43,6 @@ in
         disabled_filetypes = {
           __unkeyed-1 = "startify";
           __unkeyed-2 = "neo-tree";
-          __unkeyed-3 = "copilot-chat";
           __unkeyed-4 = "ministarter";
           __unkeyed-5 = "Avante";
           __unkeyed-6 = "AvanteInput";
@@ -74,7 +75,21 @@ in
       # | A | B | C                             X | Y | Z |
       # +-------------------------------------------------+
       sections = {
-        lualine_a = [ "mode" ];
+        lualine_a = [
+          "mode"
+          {
+            __unkeyed-1.__raw = ''
+              function()
+                return "[${config.khanelivim.profile}]"
+              end
+            '';
+            color = {
+              fg = "#11111b";
+              bg = "#a6e3a1";
+              gui = "bold";
+            };
+          }
+        ];
         lualine_b = [ "branch" ];
         lualine_c = [
           "filename"
