@@ -1,11 +1,16 @@
 _: {
   perSystem =
-    { pkgs, lib, ... }:
+    {
+      pkgs,
+      lib,
+      profileBuildCommandPython,
+      ...
+    }:
     {
       apps.check-duplicates = {
         type = "app";
         program = lib.getExe (
-          pkgs.writers.writePython3Bin "check-duplicates" { } ''
+          pkgs.writers.writePython3Bin "check-duplicates" { } /* Python */ ''
             import re
             import subprocess
             import sys
@@ -26,6 +31,8 @@ _: {
                     sys.exit(1)
 
 
+            ${profileBuildCommandPython}
+
             def main():
                 # Check for --path flag
                 path_only = "--path" in sys.argv
@@ -38,9 +45,7 @@ _: {
                     print(f"Building nixvim package for profile: {profile}...")
 
                 try:
-                    nixvim_path = run_command(
-                        f"nix build --no-link --print-out-paths .#{profile}"
-                    )
+                    nixvim_path = run_command(build_command_for_profile(profile))
                 except SystemExit:
                     if not path_only:
                         print("Build failed.")

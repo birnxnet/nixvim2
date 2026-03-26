@@ -7,6 +7,7 @@
 {
   imports = [
     ./apps
+    ./docs.nix
     ./nixvim.nix
     ./overlays.nix
     ./pkgs-by-name.nix
@@ -39,11 +40,14 @@
         overlays = lib.attrValues self.overlays;
         config = {
           allowUnfree = true;
-          # FIXME: breaks git-hooks-nix installation
+          # NOTE: Keep aliases enabled for the main flake pkgs path for now.
+          # `allowAliases = false` currently breaks git-hooks-nix installation.
+          # Nixvim eval config sets allowAliases explicitly in flake/nixvim.nix.
+          # FIXME: unify this once the git-hooks issue is resolved.
           # allowAliases = false;
         };
       };
 
-      packages.default = config.packages.khanelivim;
+      packages.default = config.nixvimConfigurations.khanelivim.config.build.package;
     };
 }

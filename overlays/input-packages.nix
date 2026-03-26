@@ -14,10 +14,13 @@ in
 {
   inherit (nixpkgs-master-packages)
     claude-code
+    codex
+    gemini
     github-copilot-cli
     opencode
 
     # TODO: Remove after hitting channel
+    direnv
     ;
 
   luaPackages = luaPackages // {

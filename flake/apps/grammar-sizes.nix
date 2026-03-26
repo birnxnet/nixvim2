@@ -1,11 +1,16 @@
 _: {
   perSystem =
-    { pkgs, lib, ... }:
+    {
+      pkgs,
+      lib,
+      profileBuildCommandPython,
+      ...
+    }:
     {
       apps.check-grammar-sizes = {
         type = "app";
         program = lib.getExe (
-          pkgs.writers.writePython3Bin "check-grammar-sizes" { } ''
+          pkgs.writers.writePython3Bin "check-grammar-sizes" { } /* Python */ ''
             import re
             import subprocess
             import sys
@@ -34,12 +39,12 @@ _: {
                     sys.exit(1)
 
 
+            ${profileBuildCommandPython}
+
             def main():
                 profile = sys.argv[1] if len(sys.argv) > 1 else "default"
                 print(f"Building nixvim package for profile: {profile}...")
-                nixvim_path = run_command(
-                    f"nix build --no-link --print-out-paths .#{profile}"
-                )
+                nixvim_path = run_command(build_command_for_profile(profile))
 
                 print("Extracting pack directory from nvim wrapper...")
                 nvim_wrapper = Path(nixvim_path) / "bin" / "nvim"
