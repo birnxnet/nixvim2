@@ -34,7 +34,7 @@
         cpp = [ "clangtidy" ];
         # TODO:
         # cs = [ "sonarlint" ];
-        css = lib.mkIf (!config.plugins.lsp.servers.stylelint_lsp.enable) [ "stylelint" ];
+        css = lib.mkIf (!config.lsp.servers.stylelint_lsp.enable) [ "stylelint" ];
         fish = [ "fish" ];
         # TODO:
         # fsharp = [ "" ];
@@ -42,7 +42,8 @@
         go = [ "golangcilint" ];
         html = [ "htmlhint" ];
         java = [ "checkstyle" ];
-        javascript = lib.mkIf (!config.plugins.lsp.servers.biome.enable) [ "biomejs" ];
+        javascript = lib.mkIf (!config.lsp.servers.biome.enable) [ "biomejs" ];
+        javascriptreact = lib.mkIf (!config.lsp.servers.biome.enable) [ "biomejs" ];
         # FIXME: removed from nixpkgs find altnerative
         # json = [ "jsonlint" ];
         lua = [ "luacheck" ];
@@ -55,13 +56,13 @@
         nix = [
           "deadnix"
         ]
-        ++ lib.optionals (!config.plugins.lsp.servers.statix.enable) [ "statix" ];
-        python = [ "ruff" ];
-        rust = [ "clippy" ];
+        ++ lib.optionals (!config.lsp.servers.statix.enable) [ "statix" ];
+        python = lib.mkIf (!config.lsp.servers.ruff.enable) [ "ruff" ];
         sh = [ "shellcheck" ];
         sql = [ "sqlfluff" ];
         swift = [ "swiftlint" ];
-        typescript = lib.mkIf (!config.plugins.lsp.servers.biome.enable) [ "biomejs" ];
+        typescript = lib.mkIf (!config.lsp.servers.biome.enable) [ "biomejs" ];
+        typescriptreact = lib.mkIf (!config.lsp.servers.biome.enable) [ "biomejs" ];
         # TODO:
         # xml = [ "xmllint" ];
         yaml = [ "yamllint" ];
@@ -73,7 +74,6 @@
         checkmake.cmd = lib.getExe pkgs.checkmake;
         checkstyle.cmd = lib.getExe pkgs.checkstyle;
         clangtidy.cmd = lib.getExe' pkgs.clang-tools "clang-tidy";
-        clippy.cmd = lib.getExe pkgs.rust-analyzer;
         cmakelint.cmd = lib.getExe' pkgs.cmake-format "cmake-lint";
         deadnix.cmd = lib.getExe pkgs.deadnix;
         fish.cmd = lib.getExe pkgs.fish;

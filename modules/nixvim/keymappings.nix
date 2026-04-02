@@ -353,6 +353,69 @@ in
                 };
               };
 
+              "<leader>uec" = {
+                action.__raw = ''
+                  function ()
+                    local is_enabled = not vim.lsp.document_color.is_enabled({ bufnr = 0 })
+                    vim.lsp.document_color.enable(is_enabled, { bufnr = 0 })
+                    vim.notify(string.format("Document Colors %s", bool2str(is_enabled), "info"))
+                  end'';
+                options = {
+                  desc = "Document Colors toggle";
+                };
+              };
+
+              "<leader>ueC" = {
+                action.__raw = ''
+                  function ()
+                    local is_enabled = not vim.lsp.codelens.is_enabled({ bufnr = 0 })
+                    vim.lsp.codelens.enable(is_enabled, { bufnr = 0 })
+                    vim.notify(string.format("Code Lens %s", bool2str(is_enabled), "info"))
+                  end'';
+                options = {
+                  desc = "Code Lens toggle";
+                };
+              };
+
+              "<leader>uev" = {
+                action.__raw = ''
+                  function ()
+                    local current = vim.diagnostic.config().virtual_lines
+                    local is_enabled = current == false or current == nil
+                    vim.diagnostic.config({
+                      virtual_lines = is_enabled and { current_line = true } or false,
+                    })
+                    vim.notify(string.format("Diagnostic Virtual Lines %s", bool2str(is_enabled), "info"))
+                  end'';
+                options = {
+                  desc = "Diagnostic Virtual Lines toggle";
+                };
+              };
+
+              "<leader>ueI" = {
+                action.__raw = ''
+                  function ()
+                    local is_enabled = not (vim.diagnostic.config().update_in_insert == true)
+                    vim.diagnostic.config({ update_in_insert = is_enabled })
+                    vim.notify(string.format("Diagnostics In Insert %s", bool2str(is_enabled), "info"))
+                  end'';
+                options = {
+                  desc = "Diagnostics In Insert toggle";
+                };
+              };
+
+              "<leader>ueS" = {
+                action.__raw = ''
+                  function ()
+                    local is_enabled = not vim.lsp.semantic_tokens.is_enabled({ bufnr = 0 })
+                    vim.lsp.semantic_tokens.enable(is_enabled, { bufnr = 0 })
+                    vim.notify(string.format("Semantic Tokens %s", bool2str(is_enabled), "info"))
+                  end'';
+                options = {
+                  desc = "Semantic Tokens toggle";
+                };
+              };
+
               # Base diff keybinds - always available
               "<leader>gdd" = {
                 action = "<cmd>diffthis<CR>";

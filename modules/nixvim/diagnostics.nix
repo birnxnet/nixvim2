@@ -17,7 +17,18 @@
     };
 
     jump = {
-      severity.__raw = "vim.diagnostic.severity.WARN";
+      on_jump.__raw = ''
+        function(diagnostic, bufnr)
+          if not diagnostic then return end
+
+          vim.diagnostic.open_float({
+            bufnr = bufnr,
+            focus = false,
+            scope = "cursor",
+          })
+        end
+      '';
+      severity.__raw = "{ min = vim.diagnostic.severity.WARN }";
     };
 
     signs = {

@@ -27,6 +27,25 @@
 
       luaConfig.pre = ''
         local slow_format_filetypes = {}
+        local web_tools = require("khanelivim.web_tools")
+      '';
+      luaConfig.post = ''
+        local conform = require("conform")
+        local function dynamic_web_formatters(filetype)
+          return function(bufnr)
+            local preferred = web_tools.preferred_formatters(bufnr, filetype)
+            return preferred and preferred.formatters or nil
+          end
+        end
+
+        conform.formatters_by_ft.javascript = dynamic_web_formatters("javascript")
+        conform.formatters_by_ft.javascriptreact = dynamic_web_formatters("javascriptreact")
+        conform.formatters_by_ft.typescript = dynamic_web_formatters("typescript")
+        conform.formatters_by_ft.typescriptreact = dynamic_web_formatters("typescriptreact")
+        conform.formatters_by_ft.html = dynamic_web_formatters("html")
+        conform.formatters_by_ft.css = dynamic_web_formatters("css")
+        conform.formatters_by_ft.scss = dynamic_web_formatters("scss")
+        conform.formatters_by_ft.sass = dynamic_web_formatters("sass")
       '';
 
       settings = {
@@ -71,7 +90,7 @@
               return
             end
 
-            return { lsp_fallback = true }
+            return { lsp_format = "fallback" }
           end
         '';
 
@@ -95,12 +114,20 @@
           cpp = [ "clang_format" ];
           cs = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ "csharpier" ];
           css = [ "stylelint" ];
+          scss = [ "stylelint" ];
+          sass = [ "stylelint" ];
           fish = [ "fish_indent" ];
           fsharp = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ "fantomas" ];
           gdscript = [ "gdformat" ];
           go = [ "golines" ];
           java = [ "google-java-format" ];
           javascript = {
+            __unkeyed-1 = "prettierd";
+            __unkeyed-2 = "biome";
+            timeout_ms = 2000;
+            stop_after_first = true;
+          };
+          javascriptreact = {
             __unkeyed-1 = "prettierd";
             __unkeyed-2 = "biome";
             timeout_ms = 2000;
@@ -114,8 +141,9 @@
           markdown = [ "deno_fmt" ];
           nix = [ "nixfmt" ];
           python = [
-            "isort"
-            "ruff"
+            "ruff_fix"
+            "ruff_format"
+            "ruff_organize_imports"
           ];
           rest = [ "kulala-fmt" ];
           rust = [ "rustfmt" ];
@@ -129,6 +157,12 @@
           terraform = [ "terraform_fmt" ];
           toml = [ "taplo" ];
           typescript = {
+            __unkeyed-1 = "prettierd";
+            __unkeyed-2 = "biome";
+            timeout_ms = 2000;
+            stop_after_first = true;
+          };
+          typescriptreact = {
             __unkeyed-1 = "prettierd";
             __unkeyed-2 = "biome";
             timeout_ms = 2000;
@@ -220,6 +254,34 @@
               end
             end
           end)
+        end
+      '';
+    };
+    WebToolingInfo = {
+      desc = "Show detected web tooling for the current workspace";
+      command.__raw = ''
+        function()
+          local details = require("khanelivim.web_tools").describe(0)
+          local preferred = details.preferred
+          local lines = {
+            "Filetype: " .. details.filetype,
+            "Biome: " .. (details.detected.biome or "none"),
+            "ESLint: " .. (details.detected.eslint or "none"),
+            "Prettier: " .. (details.detected.prettier or "none"),
+          }
+
+          if preferred then
+            table.insert(lines, "Formatter owner: " .. preferred.owner)
+            table.insert(lines, "Formatters: " .. table.concat(vim.tbl_filter(function(item)
+              return type(item) == "string"
+            end, preferred.formatters), ", "))
+          else
+            table.insert(lines, "Formatter owner: none")
+          end
+
+          table.insert(lines, "Diagnostics owner: " .. (details.diagnostics_owner or "none"))
+
+          vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "Web Tooling" })
         end
       '';
     };

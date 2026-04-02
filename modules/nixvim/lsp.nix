@@ -32,12 +32,23 @@
               };
             };
           };
-          root_markers = [
-            ".git"
+        };
+      };
+      angularls = {
+        enable = true;
+        config = {
+          # Upstream root detection is fine once we stop forcing `.git` on
+          # every server, but Angular LS should still require a real workspace.
+          workspace_required = true;
+          # Upstream includes `typescriptreact`, which lets angularls attach in
+          # React workspaces. Keep the Angular-relevant filetypes only.
+          filetypes = [
+            "typescript"
+            "html"
+            "htmlangular"
           ];
         };
       };
-      angularls.enable = true;
       bashls.enable = true;
       biome = {
         enable = true;
@@ -57,8 +68,17 @@
       cssls.enable = true;
       dockerls.enable = lib.elem "dockerls" config.khanelivim.lsp.docker;
       docker_language_server.enable = lib.elem "docker-language-server" config.khanelivim.lsp.docker;
-      # FIXME: [lspconfig] Unable to find ESLint library.
-      # eslint.enable = true;
+      eslint = {
+        enable = true;
+        config.settings = {
+          # Keep formatting with conform/prettier/biome and let ESLint focus on
+          # diagnostics and fix/code-action workflows.
+          format = false;
+          # Upstream can resolve a workspace-local ESLint install on its own,
+          # but Nix-managed projects need an explicit global fallback.
+          nodePath = "${pkgs.eslint}/lib/node_modules";
+        };
+      };
       emmylua_ls.enable = config.khanelivim.lsp.lua == "emmylua-ls";
       lua_ls.enable = config.khanelivim.lsp.lua == "lua-ls";
       fish_lsp.enable = true;
@@ -89,7 +109,14 @@
       roslyn_ls.enable = config.khanelivim.lsp.csharp == "roslyn_ls";
       sqls.enable = true;
       statix.enable = true;
-      stylelint_lsp.enable = true;
+      stylelint_lsp = {
+        enable = true;
+        config = {
+          # Rely on upstream stylelint root detection, but avoid attaching when
+          # no stylelint workspace exists.
+          workspace_required = true;
+        };
+      };
       tailwindcss = {
         enable = true;
         config.filetypes = [
@@ -110,6 +137,138 @@
     };
   };
 
+  autoCmd = [
+    {
+      event = [
+        "BufWinEnter"
+        "LspAttach"
+      ];
+      callback.__raw = ''
+        function(args)
+          local bufnr = args.buf
+          if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then return end
+          if vim.bo[bufnr].filetype == "bigfile" then return end
+
+          local win = vim.fn.bufwinid(bufnr)
+          if win == -1 then return end
+
+          local has_lsp_folding = vim.iter(vim.lsp.get_clients({ bufnr = bufnr })):any(function(client)
+            return client:supports_method("textDocument/foldingRange")
+          end)
+
+          vim.api.nvim_win_call(win, function()
+            if has_lsp_folding then
+              vim.wo.foldmethod = "expr"
+              vim.wo.foldexpr = "v:lua.vim.lsp.foldexpr()"
+            else
+              vim.wo.foldmethod = "expr"
+              vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+            end
+          end)
+        end
+      '';
+    }
+    {
+      event = "LspAttach";
+      callback.__raw = ''
+        function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if not client then return end
+          local web_tools = require("khanelivim.web_tools")
+          local diagnostics_owner = web_tools.preferred_diagnostics_owner(args.buf)
+          local filetype = vim.bo[args.buf].filetype
+
+          if client.name == "eslint" and diagnostics_owner == "biome" then
+            client:stop(true)
+            return
+          end
+
+          ${lib.optionalString config.plugins.conform-nvim.enable ''
+            local web_formatting_clients = {
+              angularls = true,
+              biome = true,
+              cssls = true,
+              eslint = true,
+              html = true,
+              ts_ls = true,
+              tsgo = true,
+              ["typescript-tools"] = true,
+            }
+
+            if web_tools.is_web_filetype(filetype) and web_formatting_clients[client.name] then
+              client.server_capabilities.documentFormattingProvider = false
+              client.server_capabilities.documentRangeFormattingProvider = false
+            end
+          ''}
+
+          if client:supports_method("textDocument/linkedEditingRange") then
+            vim.lsp.linked_editing_range.enable(true, { client_id = client.id })
+          end
+
+          local python_type_checkers = {
+            pyright = true,
+            basedpyright = true,
+            pylsp = true,
+          }
+
+          if client.name == "ruff" then
+            local has_python_type_checker = vim.iter(vim.lsp.get_clients({ bufnr = args.buf })):any(function(other)
+              return other.id ~= client.id and python_type_checkers[other.name]
+            end)
+
+            if has_python_type_checker then
+              client.server_capabilities.hoverProvider = false
+            end
+            return
+          end
+
+          if python_type_checkers[client.name] then
+            for _, other in ipairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+              if other.name == "ruff" then
+                other.server_capabilities.hoverProvider = false
+              end
+            end
+          end
+        end
+      '';
+    }
+    {
+      event = [
+        "BufEnter"
+        "CursorHold"
+        "InsertLeave"
+        "LspAttach"
+      ];
+      callback.__raw = ''
+        function(args)
+          local bufnr = args.buf
+          if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then return end
+
+          local supports_codelens = vim.iter(vim.lsp.get_clients({ bufnr = bufnr })):any(function(client)
+            return client:supports_method("textDocument/codeLens")
+          end)
+
+          if not supports_codelens then return end
+          if not vim.lsp.codelens.is_enabled({ bufnr = bufnr }) then return end
+
+          vim.lsp.codelens.refresh({ bufnr = bufnr })
+        end
+      '';
+    }
+  ];
+
+  keymaps = [
+    {
+      key = "<leader>lT";
+      mode = "n";
+      action = "<cmd>ToolingInfo<CR>";
+      options = {
+        silent = true;
+        desc = "Tooling info";
+      };
+    }
+  ];
+
   keymapsOnEvents.LspAttach = [
     (lib.mkIf (!config.plugins.conform-nvim.enable) {
       action.__raw = "vim.lsp.buf.format";
@@ -129,6 +288,198 @@
       options = {
         silent = true;
         desc = "Lsp diagnostic open_float";
+      };
+    }
+    {
+      key = "<leader>l[";
+      mode = "n";
+      action = lib.nixvim.mkRaw ''
+        function()
+          vim.diagnostic.jump({
+            count = -1,
+          })
+        end
+      '';
+      options = {
+        silent = true;
+        desc = "Previous diagnostic";
+      };
+    }
+    {
+      key = "<leader>l]";
+      mode = "n";
+      action = lib.nixvim.mkRaw ''
+        function()
+          vim.diagnostic.jump({
+            count = 1,
+          })
+        end
+      '';
+      options = {
+        silent = true;
+        desc = "Next diagnostic";
+      };
+    }
+    {
+      key = "<leader>lI";
+      mode = "n";
+      action = "<cmd>checkhealth vim.lsp<CR>";
+      options = {
+        silent = true;
+        desc = "LSP info";
+      };
+    }
+    {
+      key = "<leader>lQ";
+      mode = "n";
+      action = lib.nixvim.mkRaw ''
+        function()
+          local supports_workspace_diagnostics = vim.iter(vim.lsp.get_clients({ bufnr = 0 })):any(function(client)
+            return client:supports_method("workspace/diagnostic")
+          end)
+
+          if not supports_workspace_diagnostics then
+            vim.notify("No attached LSP supports workspace diagnostics", vim.log.levels.INFO)
+            return
+          end
+
+          vim.lsp.buf.workspace_diagnostics()
+        end
+      '';
+      options = {
+        silent = true;
+        desc = "Workspace diagnostics";
+      };
+    }
+    {
+      key = "<leader>lX";
+      mode = "n";
+      action = "<cmd>lsp restart<CR>";
+      options = {
+        silent = true;
+        desc = "Restart LSP";
+      };
+    }
+    {
+      key = "<leader>lE";
+      mode = "n";
+      action = lib.nixvim.mkRaw ''
+        function()
+          local format = function(diagnostic)
+            local source = diagnostic.source and string.format(" [%s]", diagnostic.source) or ""
+            local code = diagnostic.code and string.format(" (%s)", diagnostic.code) or ""
+            local message = diagnostic.message:gsub("%s+", " ")
+            return string.format("%s%s%s", message, source, code)
+          end
+
+          vim.diagnostic.setqflist({
+            open = true,
+            severity = { min = vim.diagnostic.severity.WARN },
+            title = "Workspace Diagnostics",
+            format = format,
+          })
+        end
+      '';
+      options = {
+        silent = true;
+        desc = "Workspace diagnostics list";
+      };
+    }
+    {
+      key = "<leader>lW";
+      mode = "n";
+      action = lib.nixvim.mkRaw ''
+        function()
+          local format = function(diagnostic)
+            local source = diagnostic.source and string.format(" [%s]", diagnostic.source) or ""
+            local code = diagnostic.code and string.format(" (%s)", diagnostic.code) or ""
+            local message = diagnostic.message:gsub("%s+", " ")
+            return string.format("%s%s%s", message, source, code)
+          end
+
+          vim.diagnostic.setqflist({
+            open = true,
+            severity = { min = vim.diagnostic.severity.ERROR, max = vim.diagnostic.severity.ERROR },
+            title = "Workspace Errors",
+            format = format,
+          })
+        end
+      '';
+      options = {
+        silent = true;
+        desc = "Workspace errors list";
+      };
+    }
+    {
+      key = "<leader>lq";
+      mode = "n";
+      action = lib.nixvim.mkRaw ''
+        function()
+          local format = function(diagnostic)
+            local source = diagnostic.source and string.format(" [%s]", diagnostic.source) or ""
+            local code = diagnostic.code and string.format(" (%s)", diagnostic.code) or ""
+            local message = diagnostic.message:gsub("%s+", " ")
+            return string.format("%s%s%s", message, source, code)
+          end
+
+          vim.diagnostic.setloclist({
+            open = true,
+            severity = { min = vim.diagnostic.severity.WARN },
+            title = "Buffer Diagnostics",
+            format = format,
+          })
+        end
+      '';
+      options = {
+        silent = true;
+        desc = "Buffer diagnostics list";
+      };
+    }
+    {
+      key = "<leader>le";
+      mode = "n";
+      action = lib.nixvim.mkRaw ''
+        function()
+          local format = function(diagnostic)
+            local source = diagnostic.source and string.format(" [%s]", diagnostic.source) or ""
+            local code = diagnostic.code and string.format(" (%s)", diagnostic.code) or ""
+            local message = diagnostic.message:gsub("%s+", " ")
+            return string.format("%s%s%s", message, source, code)
+          end
+
+          vim.diagnostic.setloclist({
+            open = true,
+            severity = { min = vim.diagnostic.severity.ERROR, max = vim.diagnostic.severity.ERROR },
+            title = "Buffer Errors",
+            format = format,
+          })
+        end
+      '';
+      options = {
+        silent = true;
+        desc = "Buffer errors list";
+      };
+    }
+    {
+      key = "<leader>lx";
+      mode = "n";
+      action = lib.nixvim.mkRaw ''
+        function()
+          local supports_codelens = vim.iter(vim.lsp.get_clients({ bufnr = 0 })):any(function(client)
+            return client:supports_method("textDocument/codeLens")
+          end)
+
+          if not supports_codelens then
+            vim.notify("No attached LSP supports code lens", vim.log.levels.INFO)
+            return
+          end
+
+          vim.lsp.codelens.run()
+        end
+      '';
+      options = {
+        silent = true;
+        desc = "Run code lens";
       };
     }
   ]
@@ -219,6 +570,10 @@
 
     which-key.settings.spec = [
       {
+        __unkeyed-1 = "gx";
+        desc = "Open Document Link";
+      }
+      {
         __unkeyed-1 = "<leader>l";
         group = "LSP";
         icon = " ";
@@ -244,8 +599,16 @@
         desc = "Definition";
       }
       {
+        __unkeyed-1 = "<leader>lE";
+        desc = "Workspace Diagnostics List";
+      }
+      {
         __unkeyed-1 = "<leader>lD";
         desc = "References";
+      }
+      {
+        __unkeyed-1 = "<leader>le";
+        desc = "Buffer Errors List";
       }
       {
         __unkeyed-1 = "<leader>lf";
@@ -254,6 +617,10 @@
       {
         __unkeyed-1 = "<leader>lh";
         desc = "Lsp Hover";
+      }
+      {
+        __unkeyed-1 = "<leader>lI";
+        desc = "LSP Info";
       }
       {
         __unkeyed-1 = "<leader>lH";
@@ -268,9 +635,47 @@
         desc = "Rename";
       }
       {
+        __unkeyed-1 = "<leader>lq";
+        desc = "Buffer Diagnostics List";
+      }
+      {
+        __unkeyed-1 = "<leader>lQ";
+        desc = "Workspace Diagnostics";
+      }
+      {
+        __unkeyed-1 = "<leader>lW";
+        desc = "Workspace Errors List";
+      }
+      {
         __unkeyed-1 = "<leader>lt";
         desc = "Type Definition";
       }
+      {
+        __unkeyed-1 = "<leader>lT";
+        desc = "Tooling Info";
+      }
+      {
+        __unkeyed-1 = "<leader>lX";
+        desc = "Restart LSP";
+      }
+      {
+        __unkeyed-1 = "<leader>lx";
+        desc = "Run Code Lens";
+      }
     ];
+  };
+
+  userCommands = {
+    ToolingInfo = {
+      desc = "Show current buffer tooling details";
+      command.__raw = ''
+        function()
+          ${lib.optionalString (
+            config.plugins.lz-n.enable && config.plugins.conform-nvim.enable
+          ) "pcall(function() require('lz.n').trigger_load('conform.nvim') end)"}
+          require("khanelivim.tooling_info").notify(0)
+        end
+      '';
+    };
   };
 }
