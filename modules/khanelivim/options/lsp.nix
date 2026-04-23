@@ -42,10 +42,11 @@
       type = lib.types.nullOr (
         lib.types.enum [
           "nvim-jdtls"
+          "nvim-java"
           "java-language-server"
         ]
       );
-      default = "nvim-jdtls";
+      default = "nvim-java";
       description = "Which Java LSP implementation to use.";
     };
 

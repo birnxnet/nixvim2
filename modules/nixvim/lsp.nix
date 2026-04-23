@@ -131,6 +131,7 @@
         ];
       };
       taplo.enable = true;
+      teal_ls.enable = true;
       ts_ls.enable = config.khanelivim.lsp.typescript == "ts_ls";
       tsgo.enable = config.khanelivim.lsp.typescript == "tsgo";
       yamlls.enable = true;
@@ -243,6 +244,19 @@
         function(args)
           local bufnr = args.buf
           if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then return end
+
+          local jdtls_client = vim.iter(vim.lsp.get_clients({ bufnr = bufnr })):find(function(client)
+            return client.name == "jdtls"
+          end)
+
+          if
+            jdtls_client
+            and _G.khanelivim_jdtls
+            and _G.khanelivim_jdtls.is_large_gradle_workspace(jdtls_client.config.root_dir)
+          then
+            vim.lsp.codelens.enable(false, { bufnr = bufnr })
+            return
+          end
 
           local supports_codelens = vim.iter(vim.lsp.get_clients({ bufnr = bufnr })):any(function(client)
             return client:supports_method("textDocument/codeLens")
@@ -521,6 +535,15 @@
       )
       [
         # Code action keymap (if fzf-lua is not enabled)
+        {
+          key = "gra";
+          mode = "n";
+          action = lib.nixvim.mkRaw "vim.lsp.buf.code_action";
+          options = {
+            silent = true;
+            desc = "Code Action";
+          };
+        }
         {
           key = "<leader>la";
           mode = "n";

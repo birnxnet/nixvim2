@@ -1,18 +1,9 @@
-{ pkgs, ... }:
 {
   plugins = {
     nvim-lightbulb = {
       # nvim-lightbulb documentation
       # See: https://github.com/kosayoda/nvim-lightbulb
       enable = true;
-      package = pkgs.vimPlugins.nvim-lightbulb.overrideAttrs (_old: {
-        patches = [
-          (pkgs.fetchpatch {
-            url = "https://github.com/kosayoda/nvim-lightbulb/pull/78.patch";
-            hash = "sha256-Ui28LmA26K+E+byP0lOspAjXjSvokoDpSW7wdnNT1xk=";
-          })
-        ];
-      });
 
       lazyLoad.settings.event = [
         "BufReadPost"
@@ -24,6 +15,9 @@
           enabled = true;
           updatetime = 200;
         };
+        # jdtls can choke on background code-action probes when external
+        # diagnostics include invalid ranges, so keep lightbulb manual for Java.
+        ignore.clients = [ "jdtls" ];
         line = {
           enabled = true;
         };

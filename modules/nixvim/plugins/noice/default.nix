@@ -82,8 +82,14 @@
             "cmp.entry.get_documentation" = true;
           };
 
-          progress.enabled = config.khanelivim.ui.notifications == "noice";
           signature.enabled = config.khanelivim.ui.signatureHelp == "noice";
+        }
+        // lib.optionalAttrs (config.khanelivim.ui.notifications == "noice") {
+          progress = {
+            enabled = true;
+            throttle = 1000 / 10;
+            view = "lsp_progress";
+          };
         };
 
         popupmenu.backend = "nui";
@@ -104,28 +110,6 @@
             filter = {
               event = "msg_show";
               kind = "search_count";
-            };
-            opts = {
-              skip = true;
-            };
-          }
-          # Skip noisy LSP progress messages
-          {
-            filter = {
-              event = "lsp";
-              kind = "progress";
-              cond.__raw = ''
-                function(message)
-                  local client = vim.tbl_get(message.opts, 'progress', 'client')
-                  local servers = { 'jdtls' }
-
-                  for index, value in ipairs(servers) do
-                      if value == client then
-                          return true
-                      end
-                  end
-                end
-              '';
             };
             opts = {
               skip = true;
@@ -214,6 +198,19 @@
             size = {
               width = "auto";
               max_width = 60;
+            };
+          };
+
+          lsp_progress = lib.mkIf (config.khanelivim.ui.notifications == "noice") {
+            view = "mini";
+            position = {
+              col = "100%";
+            };
+            size = {
+              width = "auto";
+              height = "auto";
+              max_width = 60;
+              max_height = 6;
             };
           };
         };
