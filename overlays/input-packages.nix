@@ -17,6 +17,7 @@ in
     claude-code
     github-copilot-cli
     # TODO: Remove after hitting channel
+    direnv
     ;
 
   # Dormant until a Lua package needs a targeted override.
