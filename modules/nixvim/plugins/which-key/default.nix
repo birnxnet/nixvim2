@@ -287,6 +287,13 @@ in
           icon = "";
         }
       ]
+      ++ lib.optionals config.plugins.zk.enable [
+        {
+          __unkeyed-1 = "<leader>nk";
+          group = "Zk";
+          icon = "󰠮";
+        }
+      ]
       ++
         lib.optionals
           (
