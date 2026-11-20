@@ -24,7 +24,7 @@ in
     };
 
     timeTracking.enable = lib.mkEnableOption "account-backed time tracking integrations" // {
-      default = true;
+      default = false;
     };
   };
 

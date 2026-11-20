@@ -257,7 +257,7 @@ let
       integrations.accountBacked = {
         enable = lib.mkDefault true;
         ai.enable = lib.mkDefault true;
-        timeTracking.enable = lib.mkDefault true;
+        timeTracking.enable = lib.mkDefault false;
       };
 
       jj.integrations = [
